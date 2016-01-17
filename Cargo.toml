@@ -1,6 +1,6 @@
 [package]
 name = "zero"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Nick Cameron <ncameron@mozilla.com>"]
 description = "A Rust library for zero-allocation parsing of binary data."
 license = "Apache-2.0/MIT"

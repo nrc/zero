@@ -93,6 +93,15 @@ pub fn read_strs_to_null<'a>(input: &'a [u8]) -> StrReaderIterator<'a> {
 ///   raw pointers work.
 pub unsafe trait Pod: Sized {}
 
+unsafe impl Pod for u8 {}
+unsafe impl Pod for u16 {}
+unsafe impl Pod for u32 {}
+unsafe impl Pod for u64 {}
+unsafe impl Pod for i8 {}
+unsafe impl Pod for i16 {}
+unsafe impl Pod for i32 {}
+unsafe impl Pod for i64 {}
+
 /// Reads a `T` from `input` with no checks.
 pub unsafe fn read_unsafe<'a, T: Sized>(input: &'a [u8]) -> &'a T {
     mem::transmute(input as *const [u8] as *const u8 as *const T)
