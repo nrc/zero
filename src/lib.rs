@@ -120,6 +120,7 @@ pub unsafe fn read_str_unsafe<'a>(input: &'a [u8]) -> &'a str {
 
 /// Iterates over `self.data`, yielding strings (null-terminated in `self.data`).
 /// See `read_strs_to_null`.
+#[derive(Clone, Debug)]
 pub struct StrReaderIterator<'a> {
     data: &'a [u8]
 }

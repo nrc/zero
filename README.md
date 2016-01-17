@@ -24,5 +24,5 @@ To use in your project, add to your `Cargo.toml`:
 
 ```
 [dependencies]
-zero = "0.1.1"
+zero = "0.1.2"
 ```
