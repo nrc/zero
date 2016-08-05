@@ -80,6 +80,7 @@ pub fn read_strs_to_null<'a>(input: &'a [u8]) -> StrReaderIterator<'a> {
 /// should be implemented or not is a function of both the type and the input
 /// data. I.e., just because a type is `Pod` in one context does not mean it
 /// should be in another):
+///
 /// * primitive numeric types (`u8`, `i64`, `f32`, etc.) are fine,
 /// * bools are fine, if the provided data ensures they may have only the values
 ///   `0` or `1` (note that this is a stricter requirement that C),
