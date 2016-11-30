@@ -19,9 +19,9 @@
 //!
 //! Functions assert that the provided data is large enough and aligned. The
 //! string functions check that strings are valid utf8. There is no checking
-//! that the the privided input will produce a valid object (for example, an
-//! enum has a valid discriminant). The user must assert this by implementing
-//! the trait `Pod`.
+//! that the provided input will produce a valid object (for example, an enum
+//! has a valid discriminant). The user must assert this by implementing the
+//! trait `Pod`.
 //!
 //! There are also unsafe versions of most functions which do not require the
 //! return type to implement `Pod` and which do no checking.
