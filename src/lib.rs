@@ -17,11 +17,11 @@
 //! memory safe, although this is in part based on the assumption that the
 //! client only implements the unsafe trait `Pod` where safe to do so.
 //!
-//! Functions assert that the provided data is large enough. The string
-//! functions check that strings are valid utf8. There is no checking that the
-//! the privided input will produce a valid object (for example, an enum has a
-//! valid discriminant). The user must assert this by implementing the trait
-//! `Pod`.
+//! Functions assert that the provided data is large enough and aligned. The
+//! string functions check that strings are valid utf8. There is no checking
+//! that the provided input will produce a valid object (for example, an enum
+//! has a valid discriminant). The user must assert this by implementing the
+//! trait `Pod`.
 //!
 //! There are also unsafe versions of most functions which do not require the
 //! return type to implement `Pod` and which do no checking.
@@ -37,6 +37,9 @@ use core::str::{from_utf8, from_utf8_unchecked};
 /// `input` must be at least as large as `T`.
 pub fn read<'a, T: Pod>(input: &'a [u8]) -> &'a T {
     assert!(mem::size_of::<T>() <= input.len());
+    let addr = input as *const [u8] as *const u8 as usize;
+    // Alignment is always a power of 2, so we can use bit ops instead of a mod here.
+    assert!((addr & (mem::align_of::<T>() - 1)) == 0);
 
     unsafe {
         read_unsafe(input)
@@ -51,6 +54,8 @@ pub fn read_array<'a, T: Pod>(input: &'a [u8]) -> &'a [T] {
     let t_size = mem::size_of::<T>();
     assert!(t_size > 0, "Can't read arrays of zero-sized types");
     assert!(input.len() % t_size == 0);
+    let addr = input as *const [u8] as *const u8 as usize;
+    assert!(addr & (mem::align_of::<T>() - 1) == 0);
 
     unsafe {
         read_array_unsafe(input)
@@ -180,9 +185,16 @@ mod test {
         c: i8,
     }
 
+    #[derive(Copy, Clone, PartialEq, Eq)]
+    #[repr(C)]
+    struct Baz {
+        a: u32,
+    }
+
     unsafe impl Pod for Zero {}
     unsafe impl Pod for Foo {}
     unsafe impl Pod for Bar {}
+    unsafe impl Pod for Baz {}
 
     // read
 
@@ -212,6 +224,13 @@ mod test {
         read::<Bar>(a);
     }
 
+    #[test]
+    #[should_panic]
+    fn test_unaligned() {
+        let a = &[0, 42, 0, 0, 0];
+        read::<Baz>(&a[1..]);
+    }
+
     // read_array
 
     #[test]
@@ -236,6 +255,13 @@ mod test {
     fn test_array_zero_sized() {
         let a = &[0];
         read_array::<Zero>(a);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_array_unaligned() {
+        let a = &[0, 42, 0, 0, 0, 37, 0, 0, 0];
+        read_array::<Baz>(&a[1..]);
     }
 
     // read_str
