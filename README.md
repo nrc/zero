@@ -4,7 +4,7 @@ A Rust library for zero-allocation parsing of binary data.
 
 Requires Rust version 1.6 or later (requires stable libcore for no_std).
 
-See [docs](src/lib.rs) for more information.
+See [docs](https://docs.rs/zero/) for more information.
 
 Available on [crates.io](https://crates.io/crates/zero/).
 
