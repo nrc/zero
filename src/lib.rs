@@ -89,8 +89,9 @@ pub fn read_strs_to_null<'a>(input: &'a [u8]) -> StrReaderIterator<'a> {
 /// * primitive numeric types (`u8`, `i64`, `f32`, etc.) are fine,
 /// * bools are fine, if the provided data ensures they may have only the values
 ///   `0` or `1` (note that this is a stricter requirement that C),
-/// * structs may be `Pod` if they have the `repr(C)` attribute to prevent field
-///   reordering by rustc, and the supplied data has the correct alignment,
+/// * structs may be `Pod` if they have a `repr(C)` or `repr(packed)` attribute
+///   to prevent rustc from performing field reordering. The former requires that
+///   the supplied data has the correct alignment.
 /// * enums must have valid discriminants in the supplied data, this is probably
 ///   only feasible if they have a specified representation,
 /// * there must not be invalid enum variants in the data,
