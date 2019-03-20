@@ -162,16 +162,16 @@ fn read_str_bytes(input: &[u8]) -> &[u8] {
 mod test {
     use super::*;
 
-    #[derive(Copy, Clone, PartialEq, Eq)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
     struct Zero;
 
-    #[derive(Copy, Clone, PartialEq, Eq)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
     #[repr(packed)]
     struct Foo {
         a: u8,
     }
 
-    #[derive(Copy, Clone, PartialEq, Eq)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
     #[repr(packed)]
     struct Bar {
         a: u32,
@@ -179,7 +179,7 @@ mod test {
         c: i8,
     }
 
-    #[derive(Copy, Clone, PartialEq, Eq)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
     #[repr(C)]
     struct Baz {
         a: u32,
