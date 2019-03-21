@@ -61,7 +61,7 @@ pub fn read_array<T: Pod>(input: &[u8]) -> &[T] {
 /// Read a string from `input`. The string must be a null-terminated UTF-8 string.
 /// Note that an ASCII C string fulfills this requirement.
 pub fn read_str(input: &[u8]) -> &str {
-    from_utf8(read_str_bytes(input)).expect("Non-UTF-8 string")
+    from_utf8(read_str_bytes(input)).expect("Invalid UTF-8 string")
 }
 
 /// Returns an iterator which will return a sequence of strings from `input`.
