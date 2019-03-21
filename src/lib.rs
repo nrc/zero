@@ -10,7 +10,7 @@
 //! are zero-allocation.
 //!
 //! There are functions for reading a single value, an array of values, a single
-//! null-terminated UTF8 string (which should also work with ASCII strings), and
+//! null-terminated UTF-8 string (which should also work with ASCII strings), and
 //! an array of null-terminated strings terminated by another null byte.
 //!
 //! Functions preserve the lifetime of the underlying data. These functions are
@@ -58,14 +58,14 @@ pub fn read_array<T: Pod>(input: &[u8]) -> &[T] {
     unsafe { read_array_unsafe(input) }
 }
 
-/// Read a string from `input`. The string must be a null-terminated UTF8 string.
+/// Read a string from `input`. The string must be a null-terminated UTF-8 string.
 /// Note that an ASCII C string fulfills this requirement.
 pub fn read_str(input: &[u8]) -> &str {
-    from_utf8(read_str_bytes(input)).expect("Non-utf8 string")
+    from_utf8(read_str_bytes(input)).expect("Non-UTF-8 string")
 }
 
 /// Returns an iterator which will return a sequence of strings from `input`.
-/// Each string must be a null-terminated UTF8 string. The sequence of strings
+/// Each string must be a null-terminated UTF-8 string. The sequence of strings
 /// is terminated either by a second null byte, or the end of input.
 pub fn read_strs_to_null(input: &[u8]) -> StrReaderIterator {
     StrReaderIterator { data: input }
