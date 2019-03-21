@@ -18,7 +18,7 @@
 //! client only implements the unsafe trait `Pod` where safe to do so.
 //!
 //! Functions assert that the provided data is large enough and aligned. The
-//! string functions check that strings are valid UTF8. There is no checking
+//! string functions check that strings are valid UTF-8. There is no checking
 //! that the provided input will produce a valid object (for example, an enum
 //! has a valid discriminant). The user must assert this by implementing the
 //! trait `Pod`.
