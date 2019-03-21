@@ -236,6 +236,7 @@ mod test {
 
     // read_array
 
+    #[rustfmt::skip]
     #[test]
     fn test_read_array() {
         let a = &[42];
@@ -249,14 +250,7 @@ mod test {
         let a = &[
             42, 0, 0, 0, 0x03, 0xff, 0x62, 0xa2, 0x5b, 0x42, 0x00, 0xf0, -2i8 as u8,
         ];
-        assert_eq!(
-            read_array::<Bar>(a),
-            &[Bar {
-                a: 42,
-                b: 0xf000425b_a262ff03,
-                c: -2
-            }]
-        );
+        assert_eq!(read_array::<Bar>(a), &[Bar { a: 42, b: 0xf000425b_a262ff03, c: -2 }]);
         let a = &[
             42, 0, 0, 0, 0x03, 0xff, 0x62, 0xa2, 0x5b, 0x42, 0x00, 0xf0, -2i8 as u8, 43, 0, 0, 0,
             0x03, 0xff, 0x62, 0xa2, 0x5b, 0x42, 0x00, 0xf0, -2i8 as u8, 44, 0, 0, 0, 0x03, 0xff,
@@ -265,21 +259,9 @@ mod test {
         assert_eq!(
             read_array::<Bar>(a),
             &[
-                Bar {
-                    a: 42,
-                    b: 0xf000425b_a262ff03,
-                    c: -2
-                },
-                Bar {
-                    a: 43,
-                    b: 0xf000425b_a262ff03,
-                    c: -2
-                },
-                Bar {
-                    a: 44,
-                    b: 0xf000425b_a262ff03,
-                    c: -2
-                }
+                Bar { a: 42, b: 0xf000425b_a262ff03, c: -2 },
+                Bar { a: 43, b: 0xf000425b_a262ff03, c: -2 },
+                Bar { a: 44, b: 0xf000425b_a262ff03, c: -2 },
             ]
         );
     }
