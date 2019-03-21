@@ -10,7 +10,7 @@
 //! are zero-allocation.
 //!
 //! There are functions for reading a single value, an array of values, a single
-//! null-terminated utf8 string (which should also work with ascii strings), and
+//! null-terminated UTF8 string (which should also work with ASCII strings), and
 //! an array of null-terminated strings terminated by another null byte.
 //!
 //! Functions preserve the lifetime of the underlying data. These functions are
@@ -18,7 +18,7 @@
 //! client only implements the unsafe trait `Pod` where safe to do so.
 //!
 //! Functions assert that the provided data is large enough and aligned. The
-//! string functions check that strings are valid utf8. There is no checking
+//! string functions check that strings are valid UTF8. There is no checking
 //! that the provided input will produce a valid object (for example, an enum
 //! has a valid discriminant). The user must assert this by implementing the
 //! trait `Pod`.
@@ -58,14 +58,14 @@ pub fn read_array<T: Pod>(input: &[u8]) -> &[T] {
     unsafe { read_array_unsafe(input) }
 }
 
-/// Read a string from `input`. The string must be a null-termianted utf8 string.
-/// Note that an ascii C string fulfils this requirement.
+/// Read a string from `input`. The string must be a null-terminated UTF8 string.
+/// Note that an ASCII C string fulfills this requirement.
 pub fn read_str(input: &[u8]) -> &str {
     from_utf8(read_str_bytes(input)).expect("Non-utf8 string")
 }
 
 /// Returns an iterator which will return a sequence of strings from `input`.
-/// Each string must be a null-terminated utf8 string. The sequence of strings
+/// Each string must be a null-terminated UTF8 string. The sequence of strings
 /// is terminated either by a second null byte, or the end of input.
 pub fn read_strs_to_null(input: &[u8]) -> StrReaderIterator {
     StrReaderIterator { data: input }
