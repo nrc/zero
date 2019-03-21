@@ -192,6 +192,7 @@ mod test {
 
     // read
 
+    #[rustfmt::skip]
     #[test]
     fn test_read() {
         let a = &[];
@@ -200,16 +201,10 @@ mod test {
         let a = &[42];
         assert_eq!(read::<Foo>(a), &Foo { a: 42 });
 
-        let a = &[
-            42, 0, 0, 0, 0x03, 0xff, 0x62, 0xa2, 0x5b, 0x42, 0x00, 0xf0, -2i8 as u8,
-        ];
+        let a = &[42, 0, 0, 0, 0x03, 0xff, 0x62, 0xa2, 0x5b, 0x42, 0x00, 0xf0, -2i8 as u8];
         assert_eq!(
             read::<Bar>(a),
-            &Bar {
-                a: 42,
-                b: 0xf000425b_a262ff03,
-                c: -2
-            }
+            &Bar { a: 42, b: 0xf000425b_a262ff03, c: -2 }
         );
     }
 
