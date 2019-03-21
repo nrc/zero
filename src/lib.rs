@@ -37,7 +37,7 @@ use core::str::{from_utf8, from_utf8_unchecked};
 /// `input` must be at least as large as `T`.
 pub fn read<T: Pod>(input: &[u8]) -> &T {
     assert!(mem::size_of::<T>() <= input.len());
-    let addr = input as *const [u8] as *const u8 as usize;
+    let addr = input.as_ptr() as usize;
     // Alignment is always a power of 2, so we can use bit ops instead of a mod here.
     assert!((addr & (mem::align_of::<T>() - 1)) == 0);
 
@@ -52,7 +52,7 @@ pub fn read_array<T: Pod>(input: &[u8]) -> &[T] {
     let t_size = mem::size_of::<T>();
     assert!(t_size > 0, "Can't read arrays of zero-sized types");
     assert!(input.len() % t_size == 0);
-    let addr = input as *const [u8] as *const u8 as usize;
+    let addr = input.as_ptr() as usize;
     assert!(addr & (mem::align_of::<T>() - 1) == 0);
 
     unsafe { read_array_unsafe(input) }
@@ -104,7 +104,7 @@ unsafe impl Pod for i64 {}
 
 /// Reads a `T` from `input` with no checks.
 pub unsafe fn read_unsafe<T: Sized>(input: &[u8]) -> &T {
-    mem::transmute(&*(input as *const [u8] as *const u8 as *const T))
+    &*(input.as_ptr() as *const T)
 }
 
 /// Reads an array of `T`s from `input` with no checks.
