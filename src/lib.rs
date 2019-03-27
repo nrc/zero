@@ -10,7 +10,7 @@
 //! are zero-allocation.
 //!
 //! There are functions for reading a single value, an array of values, a single
-//! null-terminated utf8 string (which should also work with ascii strings), and
+//! null-terminated UTF-8 string (which should also work with ASCII strings), and
 //! an array of null-terminated strings terminated by another null byte.
 //!
 //! Functions preserve the lifetime of the underlying data. These functions are
@@ -18,7 +18,7 @@
 //! client only implements the unsafe trait `Pod` where safe to do so.
 //!
 //! Functions assert that the provided data is large enough and aligned. The
-//! string functions check that strings are valid utf8. There is no checking
+//! string functions check that strings are valid UTF-8. There is no checking
 //! that the provided input will produce a valid object (for example, an enum
 //! has a valid discriminant). The user must assert this by implementing the
 //! trait `Pod`.
@@ -35,46 +35,40 @@ use core::str::{from_utf8, from_utf8_unchecked};
 /// Reads a single `T` from `input`.
 ///
 /// `input` must be at least as large as `T`.
-pub fn read<'a, T: Pod>(input: &'a [u8]) -> &'a T {
+pub fn read<T: Pod>(input: &[u8]) -> &T {
     assert!(mem::size_of::<T>() <= input.len());
-    let addr = input as *const [u8] as *const u8 as usize;
+    let addr = input.as_ptr() as usize;
     // Alignment is always a power of 2, so we can use bit ops instead of a mod here.
     assert!((addr & (mem::align_of::<T>() - 1)) == 0);
 
-    unsafe {
-        read_unsafe(input)
-    }    
+    unsafe { read_unsafe(input) }
 }
 
 /// Read an array of `T`s from input.
 ///
 /// `input` must contain an exact number of `T`s, there must be no extra bytes
 /// after the last `T`. `T` may not be zero-sized.
-pub fn read_array<'a, T: Pod>(input: &'a [u8]) -> &'a [T] {
+pub fn read_array<T: Pod>(input: &[u8]) -> &[T] {
     let t_size = mem::size_of::<T>();
     assert!(t_size > 0, "Can't read arrays of zero-sized types");
     assert!(input.len() % t_size == 0);
-    let addr = input as *const [u8] as *const u8 as usize;
+    let addr = input.as_ptr() as usize;
     assert!(addr & (mem::align_of::<T>() - 1) == 0);
 
-    unsafe {
-        read_array_unsafe(input)
-    }
+    unsafe { read_array_unsafe(input) }
 }
 
-/// Read a string from `input`. The string must be a null-termianted utf8 string.
-/// Note that an ascii C string fulfils this requirement.
-pub fn read_str<'a>(input: &'a [u8]) -> &'a str {
-    from_utf8(read_str_bytes(input)).expect("Non-utf8 string")
+/// Read a string from `input`. The string must be a null-terminated UTF-8 string.
+/// Note that an ASCII C string fulfills this requirement.
+pub fn read_str(input: &[u8]) -> &str {
+    from_utf8(read_str_bytes(input)).expect("Invalid UTF-8 string")
 }
 
 /// Returns an iterator which will return a sequence of strings from `input`.
-/// Each string must be a null-terminated utf8 string. The sequence of strings
+/// Each string must be a null-terminated UTF-8 string. The sequence of strings
 /// is terminated either by a second null byte, or the end of input.
-pub fn read_strs_to_null<'a>(input: &'a [u8]) -> StrReaderIterator<'a> {
-    StrReaderIterator {
-        data: input,
-    }
+pub fn read_strs_to_null(input: &[u8]) -> StrReaderIterator {
+    StrReaderIterator { data: input }
 }
 
 /// Implementing this trait means that the concrete type is plain old data (POD).
@@ -109,18 +103,18 @@ unsafe impl Pod for i32 {}
 unsafe impl Pod for i64 {}
 
 /// Reads a `T` from `input` with no checks.
-pub unsafe fn read_unsafe<'a, T: Sized>(input: &'a [u8]) -> &'a T {
-    mem::transmute(input as *const [u8] as *const u8 as *const T)
+pub unsafe fn read_unsafe<T: Sized>(input: &[u8]) -> &T {
+    &*(input.as_ptr() as *const T)
 }
 
 /// Reads an array of `T`s from `input` with no checks.
-pub unsafe fn read_array_unsafe<'a, T: Sized>(input: &'a [u8]) -> &'a [T] {
+pub unsafe fn read_array_unsafe<T: Sized>(input: &[u8]) -> &[T] {
     let ptr = input.as_ptr() as *const T;
     from_raw_parts(ptr, input.len() / mem::size_of::<T>())
 }
 
 /// Reads a null-terminated string from `input` with no checks.
-pub unsafe fn read_str_unsafe<'a>(input: &'a [u8]) -> &'a str {
+pub unsafe fn read_str_unsafe(input: &[u8]) -> &str {
     from_utf8_unchecked(read_str_bytes(input))
 }
 
@@ -128,14 +122,14 @@ pub unsafe fn read_str_unsafe<'a>(input: &'a [u8]) -> &'a str {
 /// See `read_strs_to_null`.
 #[derive(Clone, Debug)]
 pub struct StrReaderIterator<'a> {
-    data: &'a [u8]
+    data: &'a [u8],
 }
 
 impl<'a> Iterator for StrReaderIterator<'a> {
     type Item = &'a str;
 
     fn next(&mut self) -> Option<&'a str> {
-        if self.data.len() == 0 || self.data[0] == 0 {
+        if self.data.is_empty() || self.data[0] == 0 {
             return None;
         }
 
@@ -154,7 +148,7 @@ impl<'a> Iterator for StrReaderIterator<'a> {
 // Helper function for read_str and read_str_unsafe.
 // Finds the sub-slice of input which contains a string by searching for a null
 // byte.
-fn read_str_bytes<'a>(input: &'a [u8]) -> &'a [u8] {
+fn read_str_bytes(input: &[u8]) -> &[u8] {
     for (i, byte) in input.iter().enumerate() {
         if *byte == 0 {
             return &input[..i];
@@ -168,16 +162,16 @@ fn read_str_bytes<'a>(input: &'a [u8]) -> &'a [u8] {
 mod test {
     use super::*;
 
-    #[derive(Copy, Clone, PartialEq, Eq)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
     struct Zero;
 
-    #[derive(Copy, Clone, PartialEq, Eq)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
     #[repr(packed)]
     struct Foo {
         a: u8,
     }
 
-    #[derive(Copy, Clone, PartialEq, Eq)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
     #[repr(packed)]
     struct Bar {
         a: u32,
@@ -185,7 +179,7 @@ mod test {
         c: i8,
     }
 
-    #[derive(Copy, Clone, PartialEq, Eq)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
     #[repr(C)]
     struct Baz {
         a: u32,
@@ -198,16 +192,20 @@ mod test {
 
     // read
 
+    #[rustfmt::skip]
     #[test]
     fn test_read() {
         let a = &[];
-        assert!(read::<Zero>(a) == &Zero);
+        assert_eq!(read::<Zero>(a), &Zero);
 
         let a = &[42];
-        assert!(read::<Foo>(a) == &Foo { a: 42 });
+        assert_eq!(read::<Foo>(a), &Foo { a: 42 });
 
         let a = &[42, 0, 0, 0, 0x03, 0xff, 0x62, 0xa2, 0x5b, 0x42, 0x00, 0xf0, -2i8 as u8];
-        assert!(read::<Bar>(a) == &Bar { a: 42, b: 0xf000425b_a262ff03, c: -2 });
+        assert_eq!(
+            read::<Bar>(a),
+            &Bar { a: 42, b: 0xf000425b_a262ff03, c: -2 }
+        );
     }
 
     #[test]
@@ -233,21 +231,34 @@ mod test {
 
     // read_array
 
+    #[rustfmt::skip]
     #[test]
     fn test_read_array() {
         let a = &[42];
-        assert!(read_array::<Foo>(a) == &[Foo { a: 42 }]);
+        assert_eq!(read_array::<Foo>(a), &[Foo { a: 42 }]);
         let a = &[42, 43, 44, 45];
-        assert!(read_array::<Foo>(a) == &[Foo { a: 42 }, Foo { a: 43 }, Foo { a: 44 }, Foo { a: 45 }]);
+        assert_eq!(
+            read_array::<Foo>(a),
+            &[Foo { a: 42 }, Foo { a: 43 }, Foo { a: 44 }, Foo { a: 45 }]
+        );
 
-        let a = &[42, 0, 0, 0, 0x03, 0xff, 0x62, 0xa2, 0x5b, 0x42, 0x00, 0xf0, -2i8 as u8];
-        assert!(read_array::<Bar>(a) == &[Bar { a: 42, b: 0xf000425b_a262ff03, c: -2 }]);
-        let a = &[42, 0, 0, 0, 0x03, 0xff, 0x62, 0xa2, 0x5b, 0x42, 0x00, 0xf0, -2i8 as u8,
-                  43, 0, 0, 0, 0x03, 0xff, 0x62, 0xa2, 0x5b, 0x42, 0x00, 0xf0, -2i8 as u8,
-                  44, 0, 0, 0, 0x03, 0xff, 0x62, 0xa2, 0x5b, 0x42, 0x00, 0xf0, -2i8 as u8];
-        assert!(read_array::<Bar>(a) == &[Bar { a: 42, b: 0xf000425b_a262ff03, c: -2 },
-                                          Bar { a: 43, b: 0xf000425b_a262ff03, c: -2 },
-                                          Bar { a: 44, b: 0xf000425b_a262ff03, c: -2 }]);
+        let a = &[
+            42, 0, 0, 0, 0x03, 0xff, 0x62, 0xa2, 0x5b, 0x42, 0x00, 0xf0, -2i8 as u8,
+        ];
+        assert_eq!(read_array::<Bar>(a), &[Bar { a: 42, b: 0xf000425b_a262ff03, c: -2 }]);
+        let a = &[
+            42, 0, 0, 0, 0x03, 0xff, 0x62, 0xa2, 0x5b, 0x42, 0x00, 0xf0, -2i8 as u8,
+            43, 0, 0, 0, 0x03, 0xff, 0x62, 0xa2, 0x5b, 0x42, 0x00, 0xf0, -2i8 as u8,
+            44, 0, 0, 0, 0x03, 0xff, 0x62, 0xa2, 0x5b, 0x42, 0x00, 0xf0, -2i8 as u8,
+        ];
+        assert_eq!(
+            read_array::<Bar>(a),
+            &[
+                Bar { a: 42, b: 0xf000425b_a262ff03, c: -2 },
+                Bar { a: 43, b: 0xf000425b_a262ff03, c: -2 },
+                Bar { a: 44, b: 0xf000425b_a262ff03, c: -2 },
+            ]
+        );
     }
 
     #[test]
