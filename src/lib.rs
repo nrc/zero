@@ -97,10 +97,12 @@ unsafe impl Pod for u8 {}
 unsafe impl Pod for u16 {}
 unsafe impl Pod for u32 {}
 unsafe impl Pod for u64 {}
+unsafe impl Pod for u128 {}
 unsafe impl Pod for i8 {}
 unsafe impl Pod for i16 {}
 unsafe impl Pod for i32 {}
 unsafe impl Pod for i64 {}
+unsafe impl Pod for i128 {}
 
 /// Reads a `T` from `input` with no checks.
 pub unsafe fn read_unsafe<T: Sized>(input: &[u8]) -> &T {
