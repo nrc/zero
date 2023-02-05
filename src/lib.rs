@@ -192,6 +192,9 @@ mod test {
     unsafe impl Pod for Bar {}
     unsafe impl Pod for Baz {}
 
+    #[repr(C, align(4))]
+    struct Aligned<T>(T);
+
     // read
 
     #[rustfmt::skip]
@@ -227,8 +230,8 @@ mod test {
     #[test]
     #[should_panic]
     fn test_unaligned() {
-        let a = &[0, 42, 0, 0, 0];
-        read::<Baz>(&a[1..]);
+        let a = Aligned([0, 42, 0, 0, 0]);
+        read::<Baz>(&a.0[1..]);
     }
 
     // read_array
@@ -270,14 +273,11 @@ mod test {
         read_array::<Zero>(a);
     }
 
-    // This test seems to be broken because LLVM is optimising the layout of the array such that
-    // after skipping the first entry, it is 32bit aligned. Not sure how to force the layout.
-    #[ignore]
     #[test]
     #[should_panic]
     fn test_array_unaligned() {
-        let a = &[0, 42, 0, 0, 0, 37, 0, 0, 0];
-        read_array::<Baz>(&a[1..]);
+        let a = Aligned([0, 42, 0, 0, 0, 37, 0, 0, 0]);
+        read_array::<Baz>(&a.0[1..]);
     }
 
     // read_str
